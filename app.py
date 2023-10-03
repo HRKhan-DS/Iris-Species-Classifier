@@ -7,18 +7,15 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.compose import make_column_transformer
 from sklearn.linear_model import LogisticRegression
 
-# Load your trained model (replace 'iris_classifier_model.pkl' with your model file)
-model = joblib.load('iris_classifier_model.pkl')
-
 # Initialize the LabelEncoder
 le = LabelEncoder()
 
+# Load your trained model (replace 'iris_classifier_model.pkl' with the correct file path)
+model_file_path = 'iris_classifier_model.pkl'
+model = joblib.load(model_file_path)
+
 # Load the dataset for preprocessing (replace 'Cleaned Iris.csv' with your dataset file)
 df = pd.read_csv('Cleaned Iris.csv')
-
-# Drop the 'Unnamed: 0' column if it's present
-if 'Unnamed: 0' in df.columns:
-    df = df.drop(columns=['Unnamed: 0'])
 
 # Apply LabelEncoder to the 'Species' column
 df['Species'] = le.fit_transform(df['Species'])
@@ -31,7 +28,7 @@ y = df['Species']
 columns_to_scale = ['SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm']
 column_transformer = make_column_transformer(
     (StandardScaler(), columns_to_scale),
-    remainder='passthrough'
+    remainder='drop'  # Drop any columns not specified in transformers
 )
 
 # Fit the column_transformer with the training data
@@ -46,23 +43,15 @@ pipe = make_pipeline(column_transformer, lr)
 # Fit the model with the transformed training data
 pipe.fit(X, y)
 
-
 # Define a function to predict the species
 def predict_species(input_data):
-    # Create a DataFrame with the input data and add placeholders for all columns
-    input_df = pd.DataFrame(
-        data=input_data,
-        columns=['SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm']
-    )
-
     # Make predictions using the loaded model
-    y_pred = pipe.predict(input_df)
+    y_pred = pipe.predict(input_data)
 
     # Decode the label using the inverse transform of LabelEncoder
     predicted_species = le.inverse_transform(y_pred)
 
     return predicted_species
-
 
 # Create the Streamlit app
 st.title('Iris Species Classifier')
