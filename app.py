@@ -1,14 +1,15 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import joblib
+import pickle  # Use pickle instead of joblib
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.compose import make_column_transformer
 from sklearn.linear_model import LogisticRegression
 
 # Load your trained model (replace 'iris_classifier_model.pkl' with your model file)
-model = joblib.load('iris_classifier_model.pkl')
+with open('iris_model.pkl', 'rb') as model_file:
+    model = pickle.load(model_file)
 
 # Initialize the LabelEncoder
 le = LabelEncoder()
@@ -46,7 +47,6 @@ pipe = make_pipeline(column_transformer, lr)
 # Fit the model with the transformed training data
 pipe.fit(X, y)
 
-
 # Define a function to predict the species
 def predict_species(input_data):
     # Create a DataFrame with the input data and add placeholders for all columns
@@ -62,7 +62,6 @@ def predict_species(input_data):
     predicted_species = le.inverse_transform(y_pred)
 
     return predicted_species
-
 
 # Create the Streamlit app
 st.title('Iris Species Classifier')
